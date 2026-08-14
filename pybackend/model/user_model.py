@@ -1,9 +1,8 @@
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
-import mysql.connector
-from mysql.connector import Error
-from database import Base, engine, get_db  # Imported get_db here
+
+from database import Base, engine, get_db 
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -14,7 +13,7 @@ class DBUser(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
-    hashed_password = Column(String(255), nullable=False)
+    password = Column(String(255), nullable=False)
     name = Column(String(100), nullable=True)
     phone = Column(String(20), nullable=True)
     gender = Column(String(10), nullable=True)
@@ -22,9 +21,9 @@ class DBUser(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     @staticmethod
-    def verify_password(plain_password: str, hashed_password: str) -> bool:
+    def verify_password(plain_password: str, password: str) -> bool:
         """Verifies if the plain text password matches the stored bcrypt hash."""
-        return pwd_context.verify(plain_password, hashed_password)
+        return pwd_context.verify(plain_password, password)
 
     @staticmethod
     def hash_password(password: str) -> str:
@@ -40,7 +39,8 @@ class DBUser(Base):
 
         new_user = cls(
             email=user_data.get('email'),
-            hashed_password=cls.hash_password(user_data.get('password')),
+            # Changed attribute key to map to the 'password' column name
+            password=cls.hash_password(user_data.get('password')),
             name=user_data.get('name'),
             phone=user_data.get('phone'),
             gender=user_data.get('gender')
@@ -49,7 +49,7 @@ class DBUser(Base):
         db.commit()
         db.refresh(new_user)
         return new_user
-
+    
     @classmethod
     def authenticate_user(cls, db: Session, email: str, plain_password: str):
         """Authenticates a user by email and plain-text password verification."""

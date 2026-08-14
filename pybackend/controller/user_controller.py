@@ -1,14 +1,10 @@
 from flask import Blueprint, request, jsonify
-# Adjust this import to match your actual model file and class name
 from model.user_model import UserModel
 
-# 1. Use a Blueprint to avoid circular imports
 user_bp = Blueprint('user_bp', __name__)
 obj = UserModel()
 
-# Helper function to safely extract payload regardless of content-type
 def get_request_data():
-    # Checks if incoming payload is JSON; falls back to Form data if not
     if request.is_json:
         return request.get_json()
     return request.form.to_dict()
