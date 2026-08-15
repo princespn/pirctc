@@ -44,4 +44,7 @@ pip install Flask-JWT-Extended werkzeug
 pip install flask-cors
 
 ./venv/bin/pip install sqlalchemy pymysql flask-cors passlib bcrypt
+
 ./venv/bin/pip install mysql-connector-python
+
+pip install PyJWT

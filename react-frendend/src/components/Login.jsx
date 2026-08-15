@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 
-export default function Login() {
+export default function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [feedback, setFeedback] = useState({ message: '', variant: '' });
+
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -18,11 +20,21 @@ export default function Login() {
         email: email,
         password: password
       });
+
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+
       setFeedback({
-        message: `Success! Welcome back, ${response.data.user.name}`,
-        variant: 'success'
+        message: `Welcome back, ${response.data.user.name}`,
+        variant: "success",
       });
-      console.log(response.data);
+
+      if (onLoginSuccess) {
+        onLoginSuccess(response.data.user);
+      }
+
+      navigate("/dashboard", { replace: true });
+
     } catch (error) {
       setFeedback({
         message: error.response?.data?.error || 'Authentication failed',
@@ -80,5 +92,5 @@ export default function Login() {
         </Col>
       </Row>
     </Container>
-  );
+    );
 }

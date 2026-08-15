@@ -64,7 +64,7 @@ class ProductModel:
     def product_getall_model(self):
         with get_db() as db:
             try:
-                # joinedload eagerly fetches category data before session closes
+                # joinedload prevents DetachedInstanceError on relation access
                 products = db.query(DBProduct).options(joinedload(DBProduct.category)).all()
                 return [self._to_dict(p) for p in products], 200
             except Exception as e:

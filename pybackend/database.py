@@ -17,7 +17,7 @@ DATABASE_URL = f"mysql+pymysql://{DB_USER}:{safe_password}@{DB_HOST}:{DB_PORT}/{
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 db_session_factory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# scoped_session guarantees thread safety across modern microservice incoming requests
+# scoped_session guarantees thread safety across modern incoming requests
 db_session = scoped_session(db_session_factory)
 
 Base = declarative_base()
@@ -25,7 +25,7 @@ Base.query = db_session.query_property()
 
 @contextmanager
 def get_db():
-    """Context manager context to safely yield and shut down database sessions."""
+    """Context manager to safely yield and clean up database sessions."""
     db = db_session()
     try:
         yield db

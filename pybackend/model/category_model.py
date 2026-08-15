@@ -14,7 +14,7 @@ class DBCategory(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # String reference prevents circular import issues
+    # String reference prevents circular imports
     products = relationship("DBProduct", back_populates="category", cascade="all, delete-orphan")
 
 

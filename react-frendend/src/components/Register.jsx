@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-export default function Register() {
+export default function Register({ onLoginSuccess }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,6 +13,7 @@ export default function Register() {
     gender: ''
   });
   const [feedback, setFeedback] = useState({ message: '', variant: '' });
+  const navigate = useNavigate();
 
   // Handle inputs dynamically
   const handleChange = (e) => {
@@ -28,12 +30,23 @@ export default function Register() {
 
     try {
       const response = await axios.post('http://127.0.0.1:5000/user/register', formData);
+
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      
       setFeedback({
         message: response.data.message || 'Registration successful!',
         variant: 'success'
       });
+
+
+      if (onLoginSuccess) {
+        onLoginSuccess(response.data.user);
+      }
+
+      navigate("/dashboard", { replace: true });
       
-      // Reset form on success
       setFormData({
         name: '',
         email: '',
@@ -46,6 +59,8 @@ export default function Register() {
         message: error.response?.data?.error || 'Registration failed. Try again.',
         variant: 'danger'
       });
+
+     
     }
   };
 
