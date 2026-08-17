@@ -11,6 +11,7 @@ class DBProduct(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(150), index=True, nullable=False)
     price = Column(Float, nullable=False)
+    stock = Column(Integer, default=0, nullable=False)  # Added stock column
     description = Column(Text, nullable=True)
 
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
@@ -28,6 +29,7 @@ class ProductModel:
             "id": product.id,
             "name": product.name,
             "price": product.price,
+            "stock": product.stock,  # Added stock to response dict
             "description": product.description,
             "category_id": product.category_id,
             "category_name": product.category.name if product.category else None,
@@ -49,6 +51,7 @@ class ProductModel:
                 new_product = DBProduct(
                     name=payload['name'],
                     price=float(payload['price']),
+                    stock=int(payload.get('stock', 0)),  # Read stock from payload (defaults to 0)
                     description=payload.get('description', ''),
                     category_id=payload['category_id']
                 )
@@ -91,6 +94,8 @@ class ProductModel:
                     product.name = payload['name']
                 if 'price' in payload:
                     product.price = float(payload['price'])
+                if 'stock' in payload:
+                    product.stock = int(payload['stock'])  # Update stock if provided
                 if 'description' in payload:
                     product.description = payload['description']
 

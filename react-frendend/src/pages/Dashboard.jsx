@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Container, Card, Button, Navbar, Nav, Row, Col } from 'react-bootstrap';
+import { useNavigate, NavLink, Outlet } from 'react-router-dom';
+import { Button, Navbar, Nav, NavDropdown } from 'react-bootstrap';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -33,36 +33,82 @@ export default function Dashboard() {
   if (!user) return null;
 
   return (
-    <>
-      <Navbar bg="dark" variant="dark" expand="lg">
-        <Container>
-          <Navbar.Brand>App Dashboard</Navbar.Brand>
-          <Nav className="ms-auto">
-            <Button variant="outline-light" size="sm" onClick={handleLogout}>
-              Logout
-            </Button>
-          </Nav>
-        </Container>
-      </Navbar>
+    <div className="d-flex min-vh-100 bg-light">
+      {/* 1. Permanent Left Sidebar */}
+      <div 
+        className="bg-dark text-white p-3 d-flex flex-column shadow-sm" 
+        style={{ width: '260px', minHeight: '100vh', flexShrink: 0 }}
+      >
+        {/* Logo */}
+        <div className="d-flex align-items-center gap-2 px-2 pb-3 mb-3 border-bottom border-secondary">
+          <div className="bg-primary text-white rounded p-2 d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px' }}>
+            ⚡
+          </div>
+          <span className="fs-5 fw-bold text-white">Discount Daddy</span>
+        </div>
 
-      <Container className="mt-5">
-        <Row className="justify-content-center">
-          <Col md={6}>
-            <Card className="shadow-sm">
-              <Card.Header as="h5">User Profile</Card.Header>
-              <Card.Body>
-                <Card.Title>{user.name || 'Welcome'}</Card.Title>
-                <Card.Text>
-                  <strong>Email:</strong> {user.email || 'N/A'}
-                </Card.Text>
-                <Button variant="danger" onClick={handleLogout}>
-                  Sign Out
-                </Button>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </>
+        {/* Navigation Links */}
+        <Nav className="flex-column nav-pills gap-1 flex-grow-1">
+          <Nav.Link as={NavLink} to="/dashboard" end className="text-white px-3 py-2 rounded">
+            📊 Overview
+          </Nav.Link>
+          <Nav.Link as={NavLink} to="/dashboard/products" className="text-white px-3 py-2 rounded">
+            🏷️ Products
+          </Nav.Link>
+          <Nav.Link as={NavLink} to="/dashboard/categories" className="text-white px-3 py-2 rounded">
+            📁 Categories
+          </Nav.Link>
+          <Nav.Link as={NavLink} to="/dashboard/settings" className="text-white px-3 py-2 rounded">
+            ⚙️ Settings
+          </Nav.Link>
+        </Nav>
+
+        {/* Sidebar Footer */}
+        <div className="pt-3 border-top border-secondary">
+          <Button variant="outline-danger" size="sm" className="w-100 fw-semibold" onClick={handleLogout}>
+            Sign Out
+          </Button>
+        </div>
+      </div>
+
+      {/* 2. Main Content Area */}
+      <div className="flex-grow-1 d-flex flex-column min-vh-100">
+        
+        {/* Permanent Top Navbar */}
+        <Navbar bg="white" className="shadow-sm border-bottom px-4 py-2 justify-content-between sticky-top">
+          <span className="fw-bold text-secondary">Dashboard</span>
+
+          <Nav className="align-items-center">
+            <NavDropdown
+              title={
+                <span className="fw-semibold text-dark me-2">
+                  👤 {user.name || 'User Account'}
+                </span>
+              }
+              id="user-nav-dropdown"
+              align="end"
+            >
+              <NavDropdown.Header className="text-muted small">Signed in as</NavDropdown.Header>
+              <NavDropdown.ItemText className="fw-bold text-dark pt-0">
+                {user.email || 'user@example.com'}
+              </NavDropdown.ItemText>
+              <NavDropdown.Divider />
+              <NavDropdown.Item onClick={() => navigate('/dashboard/settings')}>
+                Account Settings
+              </NavDropdown.Item>
+              <NavDropdown.Divider />
+              <NavDropdown.Item onClick={handleLogout} className="text-danger fw-semibold">
+                Sign Out
+              </NavDropdown.Item>
+            </NavDropdown>
+          </Nav>
+        </Navbar>
+
+        {/* 3. Dynamic Page Content (Renders child routes here) */}
+        <div className="flex-grow-1">
+          <Outlet context={{ user }} />
+        </div>
+      </div>
+    </div>
   );
 }

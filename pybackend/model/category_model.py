@@ -8,13 +8,12 @@ class DBCategory(Base):
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), unique=True, index=True, nullable=False)
-    description = Column(String(255), nullable=True)
+    name = Column(String(100), unique=True, nullable=False, index=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # String reference prevents circular imports
+    # Relationship to DBProduct
     products = relationship("DBProduct", back_populates="category", cascade="all, delete-orphan")
 
 
@@ -24,13 +23,12 @@ class CategoryModel:
         return {
             "id": category.id,
             "name": category.name,
-            "description": category.description,
             "created_at": category.created_at.isoformat() if category.created_at else None,
             "updated_at": category.updated_at.isoformat() if category.updated_at else None
         }
 
     def category_addone_model(self, payload):
-        name = payload.get('name', '').strip()
+        name = payload.get("name")
         if not name:
             return {"error": "Category name is required"}, 400
 
@@ -38,12 +36,9 @@ class CategoryModel:
             try:
                 existing = db.query(DBCategory).filter(DBCategory.name == name).first()
                 if existing:
-                    return {"error": "Category with this name already exists"}, 400
+                    return {"error": "Category already exists"}, 400
 
-                new_category = DBCategory(
-                    name=name,
-                    description=payload.get('description', '')
-                )
+                new_category = DBCategory(name=name)
                 db.add(new_category)
                 db.commit()
                 db.refresh(new_category)
@@ -62,9 +57,11 @@ class CategoryModel:
                 return {"error": str(e)}, 500
 
     def category_update_model(self, payload):
-        category_id = payload.get('id')
-        if not category_id:
-            return {"error": "Category ID is required"}, 400
+        category_id = payload.get("id")
+        name = payload.get("name")
+
+        if not category_id or not name:
+            return {"error": "Category ID and name are required"}, 400
 
         with get_db() as db:
             try:
@@ -72,17 +69,7 @@ class CategoryModel:
                 if not category:
                     return {"error": "Category not found"}, 404
 
-                if 'name' in payload:
-                    new_name = payload['name'].strip()
-                    if new_name and new_name != category.name:
-                        existing = db.query(DBCategory).filter(DBCategory.name == new_name).first()
-                        if existing:
-                            return {"error": "Category with this name already exists"}, 400
-                        category.name = new_name
-
-                if 'description' in payload:
-                    category.description = payload['description']
-
+                category.name = name
                 db.commit()
                 db.refresh(category)
                 return {"message": "Category updated successfully", "category": self._to_dict(category)}, 200
@@ -91,7 +78,7 @@ class CategoryModel:
                 return {"error": str(e)}, 500
 
     def category_delete_model(self, payload):
-        category_id = payload.get('id')
+        category_id = payload.get("id")
         if not category_id:
             return {"error": "Category ID is required"}, 400
 

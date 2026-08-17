@@ -62,7 +62,7 @@ class UserModel:
             "updated_at": user.updated_at.isoformat() if user.updated_at else None
         }
 
-def user_register_model(self, payload):
+    def user_register_model(self, payload):
         email = payload.get('email', '').strip().lower()
         raw_password = payload.get('password', '')
 
